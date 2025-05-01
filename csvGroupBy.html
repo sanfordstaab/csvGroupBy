@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Csv Group By Tool</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="csv.js"></script>
+    <script type="text/javascript" src="fileIO.js"></script>
+    <script type="text/javascript" src="csvGroupBy.js"></script>
+  </head>
+  <body>
+    <h1 title="This tool helps you combine csv rows using grouping.">CSV Group by Tool</h1>
+    <fieldset>
+      <legend>
+        Input
+      </legend>
+      <textarea id="txtInput"
+        placeholder="Enter csv data here or drag a .csv file into this textarea.
+Then select the appropriate columns go group by and combine and hit 
+the 'Set Columns' button to process the data."
+        rows="20"
+        cols="90"
+        ondrop="FileIO.as_eh_dropFile(event, onDropOnInput);"
+        ></textarea>
+    </fieldset>
+    <button
+      title="Click this after you have entered the csv text to work 
+on into the input text area.
+After you have done this you can select the Group and Combine columns.
+The Group set is the columns that must all be equal to define the 
+set of rows to group into one row.
+The Combine set are the columns, in order, to concatonate into
+a single result column.">
+      Set Columns
+    </button>
+    <fieldset id="fsGroupColumns">
+      <legend>
+        Group Columns
+      </legend>
+      <!-- filled in by code -->
+    </fieldset>
+    <fieldset id="fsCombineColumns">
+      <legend>
+        Combine Columns
+      </legend>
+      <!-- filled in by code -->
+    </fieldset>
+    <button 
+      title="Click this after you have selected the Group and Combine columns.
+This will then produce the output based on those settings.">Process</button>
+    <fieldset>
+      <legend>
+        Output
+      </legend>
+      <textarea id="txtOutput"
+      placeholder="The resulting .csv data will appear here onced processed.
+Copy and Paste as needed."
+      rows="20"
+      cols="90"></textarea>
+    </fieldset>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+body {
+  background-color: rgb(196, 230, 9);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+fieldset {
+  background-color: mediumaquamarine;
+  align-items: center;
+  gap: 10px;
+}
