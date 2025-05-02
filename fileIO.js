@@ -81,17 +81,17 @@ class FileIO {
    */
   static as_exportToFile = async (fileHandle, sData, fnExportToUI) => {
     try {
-      await Export.as_writeFile(fileHandle, sData);
+      await FileIO.as_writeFile(fileHandle, sData);
       fnExportToUI(fileHandle.name, sData);
     } catch(e) {
       fnExportToUI('', e.message);
     }
-  
-    async function Export.as_writeFile(fileHandle, contents) {
-      const writable = await fileHandle.createWritable();
-      await writable.write(contents);
-      await writable.close();
-    }   
+  }
+
+  static async as_writeFile(fileHandle, sData) {
+    const writable = await fileHandle.createWritable();
+    await writable.write(sData);
+    await writable.close();
   }
 
 }; // class FileIO

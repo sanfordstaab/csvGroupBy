@@ -11,3 +11,7 @@ fieldset {
   align-items: center;
   gap: 10px;
 }
+
+div {
+  margin:auto;
+}

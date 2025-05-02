@@ -5,26 +5,33 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script type="text/javascript" src="objectExt.js"></script>
+    <script type="text/javascript" src="eventExt.js"></script>
+    <script type="text/javascript" src="table.js"></script>
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="csv.js"></script>
     <script type="text/javascript" src="fileIO.js"></script>
+    <script type="text/javascript" src="errorNotice.js"></script>
     <script type="text/javascript" src="csvGroupBy.js"></script>
   </head>
-  <body>
+  <body id="body" onload="eh_onPageLoad();">
     <h1 title="This tool helps you combine csv rows using grouping.">CSV Group by Tool</h1>
+    <div id="divError"></div>
+    <div id="divNotice"></div>
     <fieldset>
       <legend>
         Input
       </legend>
-      <textarea id="txtInput"
+      <textarea id="txtaInput"
+        ondrop="eh_onInputFileDropped(event)"
         placeholder="Enter csv data here or drag a .csv file into this textarea.
 Then select the appropriate columns go group by and combine and hit 
 the 'Set Columns' button to process the data."
         rows="20"
         cols="90"
-        ondrop="FileIO.as_eh_dropFile(event, onDropOnInput);"
         ></textarea>
     </fieldset>
+    <br>
     <button
       title="Click this after you have entered the csv text to work 
 on into the input text area.
@@ -35,21 +42,28 @@ The Combine set are the columns, in order, to concatonate into
 a single result column.">
       Set Columns
     </button>
-    <fieldset id="fsGroupColumns">
+    <fieldset">
       <legend>
         Group Columns
       </legend>
-      <!-- filled in by code -->
+      <span id="groupColsUI">
+        <!-- filled in by code -->
+      </span>
     </fieldset>
-    <fieldset id="fsCombineColumns">
+    <fieldset>
       <legend>
         Combine Columns
       </legend>
-      <!-- filled in by code -->
+      <span id="groupCombineUI">
+        <!-- filled in by code -->
+      </span>
     </fieldset>
+    <br>
     <button 
       title="Click this after you have selected the Group and Combine columns.
-This will then produce the output based on those settings.">Process</button>
+This will then produce the output based on those settings.">
+      Process
+    </button>
     <fieldset>
       <legend>
         Output
@@ -58,7 +72,8 @@ This will then produce the output based on those settings.">Process</button>
       placeholder="The resulting .csv data will appear here onced processed.
 Copy and Paste as needed."
       rows="20"
-      cols="90"></textarea>
+      cols="90"
+      ></textarea>
     </fieldset>
   </body>
 </html>

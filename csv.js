@@ -443,24 +443,35 @@ var csv = {
         }
         return sSet;
     },
-    toArray : function(sCSVData, options, cSkipRows, fTrimValues) {
-        // Takes CSV text and returns a parsed dataset (aRows)
-        // All row arrays will be of the same length as the first one which is presumed to be the headings
-        // Any truncated values will be appended to the last column value separated by commas.
+    
+    /**
+     * Takes CSV text and returns a parsed dataset (aRows)
+     * All row arrays will be of the same length as the first one which is presumed to be the headings
+     * Any truncated values will be appended to the last column value separated by commas.
+     * @param {string} sCSVData 
+     * @param {object=} options - see getDefaultOptions() for what to pass in.
+     * @param {number=} cSkipRows - skips parsing the first cSkipRows of data
+     * @param {boolean=} fTrimValues - defaults to true
+     * @returns 
+     */
+    toArray : function(
+        sCSVData, 
+        options = {}, 
+        cSkipRows = 0, 
+        fTrimValues = true) 
+    {
         if (typeof(options) != 'object' || Object.keys(options).length == 0) {
             options = csv.getDefaultOptions();
-        }
-        options = csv.getDefaultOptions().mergeIn(options);        
-        if (!cSkipRows) {
-            cSkipRows = 0;
+        } else {
+            options = csv.getDefaultOptions().mergeIn(options);        
         }
         let aRows = [];
         let fFirstRow = true;
         const aLines = sCSVData.split(options.sNewline);
         let cCols = 0; // we will set this after processing the first line
         let state = "startOfValue";
-        let  = '';
-        const aValues = [];
+        let val = '';
+        let aValues = [];
         for (let i = cSkipRows; i < aLines.length; i++) {   // skip headding row
             let thisLine = aLines[i];
             if (thisLine.length == 0) {
@@ -471,54 +482,65 @@ var csv = {
             for (let iCh = 0; iCh < thisLine.length; iCh++) {
                 const thisCh = thisLine[iCh];
                 switch (state) {
-                case "startOfValue":
-                    if (thisCh == options.chQuote) {
-                        state = "inQuotedValue";
-                        val = '';
-                    } else if (thisCh == options.chSeparator) {
-                        aValues.push('');
-                    } else {
-                        state = "inUnquotedValue";
-                        val = thisCh;
-                    }
-                    break;
-                case "inQuotedValue":
-                    if (thisLine.length >= (iCh + options.sEscQuote.length) && thisLine.substr(iCh, options.sEscQuote.length) == options.sEscQuote) {
-                        val += '"';
-                        iCh += options.sEscQuote.length - 1;
-                    } else if (thisCh == options.chQuote) {
-                        if (fTrimValues) {
-                            val = val.trim();
+                    case "startOfValue":
+                        if (thisCh == options.chQuote) {
+                            state = "inQuotedValue";
+                            val = '';
+                        } else if (thisCh == options.chSeparator) {
+                            aValues.push('');
+                        } else if (thisCh == ' ') {
+                            // skip blanks between values
+                        } else {
+                            state = "inUnquotedValue";
+                            if (thisCh != ' ') {
+                                val = thisCh;
+                            }
                         }
-                        aValues.push(val);
-                        state = "endedValue";
-                    } else {
-                        val += thisCh;
-                    }
-                    break;
-                case "inUnquotedValue":
-                    if (thisCh == options.chSeparator) {
-                        if (fTrimValues) {
-                            val = val.trim();
+                        break;
+
+                    case "inQuotedValue":
+                        if (thisLine.length >= (iCh + options.sEscQuote.length) && 
+                            thisLine.substring(iCh, iCh + options.sEscQuote.length) == options.sEscQuote) {
+                            // escaped quote - keep as a quote
+                            val += options.chQuote;
+                            iCh += options.sEscQuote.length - 1;
+                        } else if (thisCh == options.chQuote) {
+                            // end-quote
+                            if (fTrimValues) {
+                                val = val.trim();
+                            }
+                            aValues.push(val);
+                            state = "endedValue";
+                        } else {
+                            val += thisCh;
                         }
-                        aValues.push(val);
-                        state = "startOfValue";
-                        if (iCh == thisLine.length - 1) {   // EOL after a separator?
-                            aValues.push('');   // add empty entry after last separator
+                        break;
+
+                    case "inUnquotedValue":
+                        if (thisCh == options.chSeparator) {
+                            if (fTrimValues) {
+                                val = val.trim();
+                            }
+                            aValues.push(val);
+                            state = "startOfValue";
+                            if (iCh == thisLine.length - 1) {   // EOL after a separator?
+                                aValues.push('');   // add empty entry after last separator
+                            }
+                        } else {
+                            val += thisCh;
                         }
-                    } else {
-                        val += thisCh;
-                    }
-                    break;
-                case "endedValue":
-                    if (thisCh == options.chSeparator) {
-                        val = '';
-                        state = "startOfValue";
-                    }
-                    break;
-                default:
-                    return null;  // internal error
-                    break;
+                        break;
+
+                    case "endedValue":
+                        if (thisCh == options.chSeparator) {
+                            val = '';
+                            state = "startOfValue";
+                        }
+                        break;
+                        
+                    default:
+                        return null;  // internal error
+                        break;
                 }
             } // end of line
 
