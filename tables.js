@@ -718,7 +718,7 @@ class Table {
    * !if not, the corresponding idx will be -1
    * @param {[string]} aHeadings 
    * @param {[string]} aHeadingsToProcess 
-   * @returns [number] aIdxs
+   * @returns [Array] aIdxs
    */
   static getIdxsOfHeadings(aHeadings, aHeadingsToProcess) {
     const aIdxs = [];

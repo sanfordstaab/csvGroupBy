@@ -356,7 +356,6 @@ function getOptionsHTML(
 }
 
 /**
- * 
  * @param {element} elSelect 
  * @returns {[]} aSelectedOptionValues
  */
