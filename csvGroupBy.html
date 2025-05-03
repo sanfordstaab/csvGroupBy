@@ -12,6 +12,7 @@
     <script type="text/javascript" src="csv.js"></script>
     <script type="text/javascript" src="fileIO.js"></script>
     <script type="text/javascript" src="errorNotice.js"></script>
+    <script type="text/javascript" src="InOrderSelect.js"></script>
     <script type="text/javascript" src="csvGroupBy.js"></script>
   </head>
   <body id="body" onload="eh_onPageLoad();">
@@ -31,33 +32,46 @@ the 'Set Columns' button to process the data."
         cols="90"
         ></textarea>
     </fieldset>
-    <br>
-    <button
-      title="Click this after you have entered the csv text to work 
-on into the input text area.
-After you have done this you can select the Group and Combine columns.
-The Group set is the columns that must all be equal to define the 
-set of rows to group into one row.
-The Combine set are the columns, in order, to concatonate into
-a single result column.">
-      Set Columns
-    </button>
-    <fieldset>
-      <legend>
-        Group Columns
-      </legend>
-      <span id="groupColsUI">
-        <!-- filled in by code -->
-      </span>
-    </fieldset>
-    <fieldset>
-      <legend>
-        Combine Columns
-      </legend>
-      <span id="groupCombineUI">
-        <!-- filled in by code -->
-      </span>
-    </fieldset>
+    <table>
+      <tr>
+        <td>
+          <fieldset>
+            <legend 
+              title="This defines the set of columns in the data to use for grouping.
+Grouping lets us remove excess rows within the group by combining other columns
+into a single value yielding one row for each group.">
+              Group Columns
+            </legend>
+            <span id="InOrderSelectHost-GroupBy">
+              <!-- filled in by code -->
+            </span>
+          </fieldset>
+        </td>
+        <td>
+          <fieldset>
+            <legend
+              title="This defines the columns to combine into a single value for 
+each row of a group.">
+              Combined Columns
+            </legend>
+            <span id="InOrderSelectHost-Combined">
+              <!-- filled in by code -->
+            </span>
+          </fieldset>
+        </td>        
+        <td>
+          <fieldset>
+            <legend
+              title="This specifies which columns to leave in the output table.">
+              Output Columns
+            </legend>
+            <span id="InOrderSelectHost-Output">
+              <!-- filled in by code -->
+            </span>
+          </fieldset>
+        </td>
+      </tr>
+    </table>
     <br>
     <button id="btnProcess"
       onclick="eh_process(event);"
@@ -69,7 +83,7 @@ This will then produce the output based on those settings.">
       <legend>
         Output
       </legend>
-      <textarea id="txtOutput"
+      <textarea id="txtaOutput"
       placeholder="The resulting .csv data will appear here onced processed.
 Copy and Paste as needed."
       rows="20"

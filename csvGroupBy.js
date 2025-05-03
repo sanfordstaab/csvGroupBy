@@ -13,90 +13,56 @@ function onDropOnInput(fileName, sData) {
   g.tblIn = csv.toArray(sData);
   if (g.tblIn) {
     ge('txtaInput').value = sData;
-    ge('groupColsUI').innerHTML = getGroupUIHTML();
-    ge('groupCombineUI').innerHTML = getCombineUIHTML();
+    g.iosGroupBy = new InOrderSelect('GroupBy', g.tblIn);
+    g.iosCombined = new InOrderSelect('Combined', g.tblIn);
+    g.iosOutput = new InOrderSelect('Output', g.tblIn);
   } else {
     setError(`Failed to parse input from ${fileName}`);
   }
 }
 
-function getGroupUIHTML() {
-  const sSelHtmlOptions = getOptionsHTML(g.tblIn[0].deepCopy().sort(), '');
-  let html = '';
+// ----------------------------
 
-  html += `<select id="selGroupCols" multiple size="15">
-  ${
-    sSelHtmlOptions
-  }
-  </select>`;
+// instance specific event handlers
 
-  return html;
+// GroupBy
+function eh_saveGroupByKeyState(event) {
+  g.iosGroupBy.eh_saveKeyState(event);
 }
 
-function getCombineUIHTML() {
-  g.aCombineHeadings = [];
-  const sSelHtmlOptions = getOptionsHTML(g.tblIn[0].deepCopy().sort(), '');
-  let html = '';
-
-  html += `<select id="selCombineCols" size="15"
-    title="Select the columns to add to the combined columns list.
-    Hold the 'ctrl' key down to add the column to the list or 
-    hold the 'shift' key down to remove the column from the list.  
-    Select the columns in the order you want them combined."
-    onchange="eh_onCombineColsSelectChanged(event)"
-    onkeydown="eh_saveKeyState(event)"
-    onmousedown="eh_saveKeyState(event)"
-    onclick="eh_saveKeyState(event)"
-    >
-  ${
-    sSelHtmlOptions
-  }
-  </select>
-  <br>
-  <div id="divCombineColsInOrder">
-  </div>`;
-
-  return html;
+function eh_onGroupByColsSelectChanged(event) {
+  g.iosGroupBy.eh_onColsSelectChanged(event);
 }
 
-function eh_saveKeyState(event) {
-  g.shiftKey = event.shiftKey;
-  g.ctrlKey = event.ctrlKey;
+// Combined
+function eh_saveCombinedKeyState(event) {
+  g.iosCombined.eh_saveKeyState(event);
 }
 
-function eh_onCombineColsSelectChanged(event) {
-  const value = ge('selCombineCols').value;
-  const idx = g.aCombineHeadings.indexOf(value);
-
-  if (g.shiftKey === true && idx != -1) {
-    // delete the selected value from the list
-    g.aCombineHeadings.splice(idx, 1);
-  } else if (g.ctrlKey === true && idx == -1) {
-    // add the selected value to the list
-    g.aCombineHeadings.push(value);
-  }
-
-  let html = 'No Combined data specified.';
-  if (g.aCombineHeadings.length) {
-    html = '<ol>';
-    for (const heading of g.aCombineHeadings) {
-      html += `<li>${heading}</li>`;
-    }
-    html += '</ol>';
-  }
-
-  ge('divCombineColsInOrder').innerHTML = html;
+function eh_onCombinedColsSelectChanged(event) {
+  g.iosCombined.eh_onColsSelectChanged(event);
 }
+
+// Output
+function eh_saveOutputKeyState(event) {
+  g.iosOutput.eh_saveKeyState(event);
+}
+
+function eh_onOutputColsSelectChanged(event) {
+  g.iosOutput.eh_onColsSelectChanged(event);
+}
+
+// -------------------------
 
 function eh_process(event) {
-  const aGroupHeadings = getMultiSelectValues(ge('selGroupCols'));
-  if (!g.aCombineHeadings.length || !aGroupHeadings.length) {
-    ge('txtOutput').value = 'You must specify both the groupby and combine groups to process the input.';
+  if (!g.iosCombined.aSelectedHeadings.length || 
+      !g.iosGroupBy.aSelectedHeadings.length) {
+    ge('txtaOutput').value = 'You must specify both the groupby and combine groups to process the input.';
     return;
   }
 
   // create a temporary table and calculate the group value for each row of tblIn
-  const tbl = g.tblIn.deepCopy();
+  const tbl = [ g.tblIn[0].deepCopy() ];
 
   // append headings
   tbl[0].push('groupValue'); 
@@ -107,27 +73,28 @@ function eh_process(event) {
     const aRowIn = g.tblIn[iRow];
     const aRowOut = aRowIn.deepCopy();
     // append groupValue
-    aRowOut.push(getRowCombinedValue(aRowIn, g.tblIn[0], aGroupHeadings));
+    aRowOut.push(getRowMulitValue(aRowIn, g.tblIn[0], g.iosGroupBy.aSelectedHeadings));
     aRowOut.push(''); // append combinedValue string (to append to later)
     tbl.push(aRowOut);
   }
 
   // sort the tbl rows by the groupValues
+  const idxGroupValue = tbl[0].indexOf('groupValue');
   tbl = Table.sortTableRows(tbl, 
     function(aRow1, aRow2) {
-      const idxGroupValue = tbl[0].indexOf('groupValue');
       return genSort(aRow1[idxGroupValue], aRow2[idxGroupValue]);
     }
   );
 
-  const tblOut = [];
+  // now go through tbl and combine rows based on the GroupBy values.
+
+  let tblOut = [];
   tblOut.push(tbl[0]); // headings
   
   // Go through each row and build up the combinedValues where
   // the groupValues are equal.
   let prevGroupValue = null;
   let aCombinedValuesSoFar = [];
-  const idxGroupValue = aRow[tbl[0].indexOf('groupValue')];
   const idxCombinedValue = aRow[tbl[0].indexOf('combinedValue')];
   for (let iRow = 1; iRow < g.tblIn.length; iRow++) {
     const aRow = g.tblIn[iRow];
@@ -159,10 +126,22 @@ function eh_process(event) {
         tblOut.push(aNewRow);
       }
 
-    } // else
+    } // if
+
     aCombinedValuesSoFar.push(
-      getRowCombinedValue(aRow, g.tblIn[0], g.aCombineHeadings));
-  } // for
+      getRowMulitValue(aRow, g.tblIn[0], g.Combined.headings));
+  } // for each tblIn row
+
+  // include our calculated headings
+  const aHeadingsToKeep = g.iosOutput.aSelectedHeadings;
+  aHeadingsToKeep.push('groupValue');
+  aHeadingsToKeep.push('combinedValue');
+
+  // eliminate other columns
+  tblOut = Table.filterTableColumns(tblOut, aHeadingsToKeep);
+
+  // put the new table out.
+  ge('txtaOutput').value = csv.toCsv(tblOut);
 }
 
 function createNewRowFromGroup(
@@ -199,10 +178,10 @@ function createNewRowFromGroup(
   }
 }
 
-function getRowCombinedValue(aRow, aHeadings, aCombinedHeadings) {
+function getRowMulitValue(aRow, aRowHeadings, aCombinedHeadings) {
   let aCombinedValues = [];
   for (const combinedHeading of aCombinedHeadings) {
-    aCombinedValues.push(aRow[aHeadings.indexOf(combinedHeading)]); 
+    aCombinedValues.push(aRow[aRowHeadings.indexOf(combinedHeading)]); 
   }
   return aCombinedValues.join(', ');
 }
