@@ -1,5 +1,7 @@
 // csvGroupBy.js
 
+// uses tables.js, InOrderSelect.js
+
 const g = {};
 
 function eh_onPageLoad(event) {
@@ -62,7 +64,7 @@ function eh_process(event) {
   }
 
   // create a temporary table and calculate the group value for each row of tblIn
-  const tbl = [ g.tblIn[0].deepCopy() ];
+  let tbl = [ g.tblIn[0].deepCopy() ];
 
   // append headings
   tbl[0].push('groupValue'); 
@@ -95,11 +97,12 @@ function eh_process(event) {
   // the groupValues are equal.
   let prevGroupValue = null;
   let aCombinedValuesSoFar = [];
-  const idxCombinedValue = aRow[tbl[0].indexOf('combinedValue')];
-  for (let iRow = 1; iRow < g.tblIn.length; iRow++) {
-    const aRow = g.tblIn[iRow];
+  const idxCombinedValue = tbl[0].indexOf('combinedValue');
+  for (let iRow = 1; iRow < tbl.length; iRow++) {
+    const aRow = tbl[iRow];
+    aRow[idxCombinedValue] = getRowMulitValue(aRow, tbl[0], g.Combined.aSelectedHeadings);
     const thisGroupValue = aRow[idxGroupValue];
-    const fLastRow = iRow == g.tblIn.length - 1;
+    const fLastRow = iRow == tbl.length - 1;
     if (thisGroupValue != prevGroupValue || fLastRow) {
       
       // new group or the last row
@@ -113,11 +116,9 @@ function eh_process(event) {
       } else {
 
         // first row
-        aCombinedValuesSoFar = [ aRow[idxCombinedValue] ];
       }
     } else {
       // continuing group row
-      aCombinedValuesSoFar.push(aRow[idxCombinedValue]);
       if (fLastRow) {
        aNewRow =  createNewRowFromGroup(aRow, 
           prevGroupValue, 
@@ -128,8 +129,7 @@ function eh_process(event) {
 
     } // if
 
-    aCombinedValuesSoFar.push(
-      getRowMulitValue(aRow, g.tblIn[0], g.Combined.headings));
+    aCombinedValuesSoFar.push(aRow[idxCombinedValue]);
   } // for each tblIn row
 
   // include our calculated headings

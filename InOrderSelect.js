@@ -26,12 +26,14 @@ class InOrderSelect {
     ge(this.idHost).innerHTML = this.#getSelectWithOrderHTML();
   }
 
+  // TODO: it would be nice to have Enter and Del keys work as well
+  
   #getSelectWithOrderHTML() {
     return `<select id="${this.idSelect}" size="15"
       title="Select the columns to add to the ${this.setName} columns list.
 Hold the 'ctrl' key down to add that column to the end of the list 
 or 
-Hold the 'alt' key down to remove that column from the list.  
+Hold the 'shift' key down to remove that column from the list.  
 Select the columns in the order you want them."
 onkeydown="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectChanged(event);"
 onmousedown="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectChanged(event);"
@@ -51,7 +53,7 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
    * @param {object} event 
    */
   eh_saveKeyState(event) {
-    this.altKey = event.altKey;
+    this.shiftKey = event.shiftKey;
     this.ctrlKey = event.ctrlKey;
   }
 
@@ -60,22 +62,24 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
    * @param {object} event 
    */
   eh_onColsSelectChanged(event) {
-    if (event.key == 'Control' || event.key == 'Alt') {
+    if (event.key == 'Control' || event.key == 'Shift') {
       return; // don't react to just these keys moving.
     }
     const value = event.target.value;
     const idx = this.aSelectedHeadings.indexOf(value);
-    console.log(`idx=${idx} altKey=${this.altKey} ctrlKey=${this.ctrlKey}`);
+    console.log(`idx=${idx} shiftKey=${this.shiftKey} ctrlKey=${this.ctrlKey}`);
 
-    if (this.altKey === true && idx != -1) {
+    if (this.shiftKey === true && idx != -1) {
       // delete the selected value from the list
       this.aSelectedHeadings.splice(idx, 1);
     } else if (this.ctrlKey === true && idx == -1) {
       // add the selected value to the list
       this.aSelectedHeadings.push(value);
+    } else {
+      return; // no changes
     }
 
-    let html = `No ${this.setName} data specified.`;
+    let html = ``;
     if (this.aSelectedHeadings.length) {
       html = '<ol>';
       for (const heading of this.aSelectedHeadings) {
