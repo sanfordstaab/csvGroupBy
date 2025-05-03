@@ -70,13 +70,14 @@ function eh_process(event) {
   tbl[0].push('groupValue'); 
   tbl[0].push('combinedValue');
 
-  // calculate groupValues and add empty comvineValues
+  // calculate group and combined values for each row
   for (let iRow = 1; iRow < g.tblIn.length; iRow++) {
     const aRowIn = g.tblIn[iRow];
     const aRowOut = aRowIn.deepCopy();
     // append groupValue
     aRowOut.push(getRowMulitValue(aRowIn, g.tblIn[0], g.iosGroupBy.aSelectedHeadings));
-    aRowOut.push(''); // append combinedValue string (to append to later)
+    const combinedValue = getRowMulitValue(aRowOut, tbl[0], g.iosCombined.aSelectedHeadings);
+    aRowOut.push(combinedValue); // append combinedValue string (to append to later)
     tbl.push(aRowOut);
   }
 
@@ -100,36 +101,25 @@ function eh_process(event) {
   const idxCombinedValue = tbl[0].indexOf('combinedValue');
   for (let iRow = 1; iRow < tbl.length; iRow++) {
     const aRow = tbl[iRow];
-    aRow[idxCombinedValue] = getRowMulitValue(aRow, tbl[0], g.Combined.aSelectedHeadings);
     const thisGroupValue = aRow[idxGroupValue];
     const fLastRow = iRow == tbl.length - 1;
     if (thisGroupValue != prevGroupValue || fLastRow) {
-      
       // new group or the last row
       if (prevGroupValue) {
-        const aNewRow = createNewRowFromGroup(aRow, 
-          prevGroupValue, 
-          aCombinedValuesSoFar, 
-          idxCombinedValue);
-        tblOut.push(aNewRow);
-        aCombinedValuesSoFar = [];
-      } else {
-
-        // first row
+        tbl[iRow - 1][idxCombinedValue] = 
+        formatCombinedValues(aCombinedValuesSoFar);
+        tblOut.push(tbl[iRow - 1]);
       }
-    } else {
-      // continuing group row
+      aCombinedValuesSoFar = [ aRow[idxCombinedValue] ];
+    } else { // thisGroup == prevGroup
+      aCombinedValuesSoFar.push(aRow[idxCombinedValue]);
       if (fLastRow) {
-       aNewRow =  createNewRowFromGroup(aRow, 
-          prevGroupValue, 
-          aCombinedValuesSoFar, 
-          idxCombinedValue);
-        tblOut.push(aNewRow);
+        aRow[idxCombinedValue] = 
+          formatCombinedValues(aCombinedValuesSoFar);
+          tblOut.push(aNewRow);
       }
-
     } // if
-
-    aCombinedValuesSoFar.push(aRow[idxCombinedValue]);
+    prevGroupValue = thisGroupValue;
   } // for each tblIn row
 
   // include our calculated headings
@@ -144,38 +134,37 @@ function eh_process(event) {
   ge('txtaOutput').value = csv.toCsv(tblOut);
 }
 
-function createNewRowFromGroup(
-  aRow, 
-  prevGroupValue, 
-  aCombinedValuesSoFar, 
-  idxCombinedValue) 
-{
-  //  put out the prevous one if we have one
-  const aNewRow = aRow.deepCopy();
-  aNewRow[idxGroupValue] = prevGroupValue; // groupValue
-  if (aCombinedValuesSoFar.length == 1) {
-    // combinedValue - one unique row in the group
-    aNewRow[idxCombinedValue] = aCombinedValuesSoFar[0]; 
-  } else {
-    // more than 1 combined value
+function formatCombinedValues(aCombinedValuesSoFar) {
+  // remove blank values
+  for (let i = 0; i < aCombinedValuesSoFar.length; i++) {
+    let tv = aCombinedValuesSoFar[i].trim();
+    // remove ,s
+    tv = tv.split(', ').join(' ').trim();
 
-    // add delimeters:
-    // default delimeter is ", "
-    let sCombinedValues = aCombinedValuesSoFar.join(', ');
+    // if there is nothing there, delete it
+    if (tv == '') {
+      aCombinedValuesSoFar.splice(i, 1);
+      i--;
+    }
+    aCombinedValuesSoFar[i] = tv;
+  }
 
-    // first delimeter is " and "
-    sCombinedValues = sCombinedValues.replace(/, /, ' and ');
+  // add delimeters:
+  // default delimeter is ", "
+  let sCombinedValues = aCombinedValuesSoFar.join(', ').replace(/  /g, ' ');
 
-    // last delimeter is " ", remove the ,
-    const iLastDelimeter = sCombinedValues.lastIndexOf(', ');
+  // first delimeter is " and "
+  sCombinedValues = sCombinedValues.replace(/, /, ' and ');
+
+  // last delimeter is " ", remove the ,
+  const iLastDelimeter = sCombinedValues.lastIndexOf(', ');
+  if (iLastDelimeter != -1) {
     sCombinedValues = 
       sCombinedValues.substring(0, iLastDelimeter - 1) +
       sCombinedValues.substring(iLastDelimeter + 1);
-
-    aNewRow[idxCombinedValue] = sCombinedValues;
-
-    return aNewRow;
   }
+
+  return sCombinedValues;
 }
 
 function getRowMulitValue(aRow, aRowHeadings, aCombinedHeadings) {

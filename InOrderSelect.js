@@ -21,15 +21,19 @@ class InOrderSelect {
     this.aSelectedHeadings = [];
     this.idHost = `InOrderSelectHost-${setName}`; // external host id
     this.idSelect = `sel${setName}Cols`; // internal id
-    this.idOrderList = `orderList-${this.setName}` // internal id
+    this.idOrderList = `orderList-${this.setName}`; // internal id
+    this.noDataText = 'No columns are selected';
     // render this instance
     ge(this.idHost).innerHTML = this.#getSelectWithOrderHTML();
   }
 
   // TODO: it would be nice to have Enter and Del keys work as well
-  
+
   #getSelectWithOrderHTML() {
-    return `<select id="${this.idSelect}" size="15"
+    return `<table>
+    <tr>
+      <td>
+    <select id="${this.idSelect}" size="15"
       title="Select the columns to add to the ${this.setName} columns list.
 Hold the 'ctrl' key down to add that column to the end of the list 
 or 
@@ -43,9 +47,14 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
       getOptionsHTML(this.tblHeadings, '')
     }
     </select>
-    <br>
+    </td>
+    <td>
     <div id="${this.idOrderList}">
-    </div>`;
+      ${this.InOrderSelect}
+    </div>
+    </td>
+    </tr>
+    </table>`;
   }
 
   /**
@@ -67,7 +76,7 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
     }
     const value = event.target.value;
     const idx = this.aSelectedHeadings.indexOf(value);
-    console.log(`idx=${idx} shiftKey=${this.shiftKey} ctrlKey=${this.ctrlKey}`);
+    // console.log(`idx=${idx} shiftKey=${this.shiftKey} ctrlKey=${this.ctrlKey}`);
 
     if (this.shiftKey === true && idx != -1) {
       // delete the selected value from the list
@@ -79,7 +88,7 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
       return; // no changes
     }
 
-    let html = ``;
+    let html = this.noDataText;
     if (this.aSelectedHeadings.length) {
       html = '<ol>';
       for (const heading of this.aSelectedHeadings) {
