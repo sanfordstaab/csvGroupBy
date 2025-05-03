@@ -1,6 +1,12 @@
-"A", "B", "C", "D"
-1,2,3,4
-"Jack", "Bob", "Sam", "Tina"
-"This", "That", "Him", "Other"
-14, "Gangs", 26, "Slap me"
-"This", "Is", "the", "last line"
+data1,data2,combine1,combine2,combine3,group1,group2
+1,2,3,4,5,6,7
+Jack,Tom,Dick,Florina,Thomas,Garage,Bar
+This,That,Other,Larry,Tom,Garage,Bar
+Six,Twenty,5,19,27,Garage,Foo
+Twany,is,a,big ,liar,Garage,Bar
+Is ,this ,real ,or ,false?,Garage,foo
+lethal,weapon,4,5,6,Tina,Bar
+Sexy,robot,is,going ,to kill,Garage,Bar
+Missing,Data,,hi,,Garage,foo
+more,missing,,,,Garage,Bar
+and,can,this,get,any,Garage,Bar

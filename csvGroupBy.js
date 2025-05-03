@@ -124,7 +124,6 @@ function eh_process(event) {
 
   // include our calculated headings
   const aHeadingsToKeep = g.iosOutput.aSelectedHeadings;
-  aHeadingsToKeep.push('groupValue');
   aHeadingsToKeep.push('combinedValue');
 
   // eliminate other columns

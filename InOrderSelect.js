@@ -50,7 +50,7 @@ onclick="eh_save${this.setName}KeyState(event); eh_on${this.setName}ColsSelectCh
     </td>
     <td>
     <div id="${this.idOrderList}">
-      ${this.InOrderSelect}
+      ${this.noDataText}
     </div>
     </td>
     </tr>
