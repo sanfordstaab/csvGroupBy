@@ -14,9 +14,8 @@
  * The user must provide an HTML host with id InOrderSelectHost-<setName>
  */
 class InOrderSelect {
-  constructor(setName, tblIn) {
-    this.tblIn = tblIn.deepCopy();
-    this.tblHeadings = this.tblIn[0].sort();
+  constructor(setName, aHeadings) {
+    this.tblHeadings = aHeadings.deepCopy().sort();
     this.setName = setName;
     this.aSelectedHeadings = [];
     this.idHost = `InOrderSelectHost-${setName}`; // external host id

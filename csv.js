@@ -423,7 +423,11 @@ var csv = {
                 if (iCol > 0 && iCol < aRows[0].length) {
                     s += options.chSeparator;
                 }
-                s += csv.enquote((aRows[iRow][iCol]).toString(), options);
+                let value = aRows[iRow][iCol];
+                if (undefined == value) {
+                    value = '';
+                }
+                s += csv.enquote(value.toString(), options);
             }
             if (iRow < aRows.length - 1) {
                 s += options.sNewline;

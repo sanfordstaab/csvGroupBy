@@ -15,9 +15,16 @@ function onDropOnInput(fileName, sData) {
   g.tblIn = csv.toArray(sData);
   if (g.tblIn) {
     ge('txtaInput').value = sData;
-    g.iosGroupBy = new InOrderSelect('GroupBy', g.tblIn);
-    g.iosCombined = new InOrderSelect('Combined', g.tblIn);
-    g.iosOutput = new InOrderSelect('Output', g.tblIn);
+    const tbl = g.tblIn.deepCopy()
+    const aHeadings = tbl[0];
+    g.iosGroupBy = new InOrderSelect('GroupBy', aHeadings);
+    g.iosCombined = new InOrderSelect('Combined', aHeadings);
+
+    // we add top the output columns the generated Combined and GroupBy value.
+    const aOutputHeadings = aHeadings.deepCopy();
+    aOutputHeadings.push('combinedValue');
+    aOutputHeadings.push('groupByValue');
+    g.iosOutput = new InOrderSelect('Output', aOutputHeadings);
   } else {
     setError(`Failed to parse input from ${fileName}`);
   }
@@ -103,28 +110,34 @@ function eh_process(event) {
     const aRow = tbl[iRow];
     const thisGroupValue = aRow[idxGroupValue];
     const fLastRow = iRow == tbl.length - 1;
-    if (thisGroupValue != prevGroupValue || fLastRow) {
+
+    if (thisGroupValue != prevGroupValue) {
       // new group or the last row
       if (prevGroupValue) {
+        // save the previous group as one row
         tbl[iRow - 1][idxCombinedValue] = 
-        formatCombinedValues(aCombinedValuesSoFar);
+          formatCombinedValues(aCombinedValuesSoFar);
         tblOut.push(tbl[iRow - 1]);
       }
+      // restart the merged combined values for the current row
       aCombinedValuesSoFar = [ aRow[idxCombinedValue] ];
     } else { // thisGroup == prevGroup
       aCombinedValuesSoFar.push(aRow[idxCombinedValue]);
-      if (fLastRow) {
-        aRow[idxCombinedValue] = 
-          formatCombinedValues(aCombinedValuesSoFar);
-          tblOut.push(aNewRow);
-      }
     } // if
+
+    if (fLastRow) {
+      // put out the last row
+      aRow[idxCombinedValue] = 
+        formatCombinedValues(aCombinedValuesSoFar);
+      tblOut.push(aRow);
+    }
     prevGroupValue = thisGroupValue;
   } // for each tblIn row
 
   // include our calculated headings
   const aHeadingsToKeep = g.iosOutput.aSelectedHeadings;
   aHeadingsToKeep.push('combinedValue');
+  aHeadingsToKeep.push('groupByValue');
 
   // eliminate other columns
   tblOut = Table.filterTableColumns(tblOut, aHeadingsToKeep);
